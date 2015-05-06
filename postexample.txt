@@ -1,0 +1,43 @@
+public ActionResult QuickPay()
+{
+	var parameters = new Dictionary<string, string>();
+	parameters.Add("version", "v10");
+	parameters.Add("merchant_id", "1");
+	parameters.Add("agreement_id", "1");
+	parameters.Add("order_id", "0001");
+	parameters.Add("amount", "100");
+	parameters.Add("currency", "DKK");
+	parameters.Add("continue_url", "http://shop.domain.tld/continue");
+	parameters.Add("cancel_url", "http://shop.domain.tld/cancel");
+	parameters.Add("callback_url", "http://shop.domain.tld/callback");
+	parameters.Add("language", "da");
+	parameters.Add("autocapture", "1");
+
+	ViewBag.Language = language;
+	ViewBag.Autocapture = autocapture;
+	ViewBag.OrderId = orderId;
+	ViewBag.MerchantId = merchantId;
+	ViewBag.AgreementId = agreementId;
+	ViewBag.Amount = amount;
+	ViewBag.Currency = currency;
+	ViewBag.ContinueUrl = continueUrl;
+	ViewBag.CancelUrl = cancelUrl;
+	ViewBag.CallbackUrl = callbackUrl;
+	ViewBag.Checksum = ComputeHmac(parameters, "your_secret_agreement_api_key");
+
+	return View();
+}
+
+private string ComputeHmac(Dictionary<string, string> parameters, string secret)
+{
+	var result = String.Join(" ", parameters.OrderBy(c => c.Key).Select(c => c.Value).ToArray());
+	var e = Encoding.UTF8;
+	var hmac = new HMACSHA256(e.GetBytes(secret));
+	byte[] b = hmac.ComputeHash(e.GetBytes(result));
+	var s = new StringBuilder();
+	for (int i = 0; i < b.Length; i++)
+	{
+		s.Append(b[i].ToString("x2"));
+	}
+	return s.ToString();
+}

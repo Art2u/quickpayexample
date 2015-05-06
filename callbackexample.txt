@@ -1,0 +1,33 @@
+string checkSum = Request.Headers["QuickPay-Checksum-SHA256"];
+				
+var bytes = new byte[Request.InputStream.Length];
+Request.InputStream.Read(bytes, 0, bytes.Length);
+Request.InputStream.Position = 0;
+string content = Encoding.ASCII.GetString(bytes);
+
+string compute = ComputeHmac(content, "your_account_private_key");
+
+if (checkSum.Equals(compute))
+{
+	// Request is authenticated
+}
+else
+{
+	// Request is NOT authenticated
+}
+
+private string ComputeHmac(string baseInput, string secret)
+{
+	var e = Encoding.UTF8;
+
+	var hmac = new HMACSHA256(e.GetBytes(secret));
+	byte[] b = hmac.ComputeHash(e.GetBytes(baseInput));
+
+	var s = new StringBuilder();
+	for (int i = 0; i < b.Length; i++)
+	{
+		s.Append(b[i].ToString("x2"));
+	}
+
+	return s.ToString();
+}
